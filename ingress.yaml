@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: "nginx-ip"
+    networking.gke.io/managed-certificates: managed-cert
+    kubernetes.io/ingress.class: "gce"  # Updated annotation
+spec:
+  defaultBackend:
+    service:
+      name: nginx-service
+      port:
+        number: 80
+
+

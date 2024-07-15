@@ -1,0 +1,34 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-trigger-auth-gcp-credentials
+spec:
+  podIdentity:
+    provider: gcp
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: gcp-stackdriver-scaledobject
+spec:
+  scaleTargetRef:
+    kind: Deployment
+    name: nginx-deployment
+  minReplicaCount: 0
+  maxReplicaCount: 2
+  fallback:                                                 # Optional. Section to specify fallback options
+    failureThreshold: 3                                     # Mandatory if fallback section is included
+    replicas: 1
+  triggers:
+    - type: gcp-stackdriver
+      authenticationRef:
+        name: keda-trigger-auth-gcp-credentials
+      metadata:
+        projectId: cloud-tech-se-sandbox
+        filter: 'metric.type="loadbalancing.googleapis.com/https/request_count"'
+        targetValue: '5'
+        valueIfNull: '0.0'
+        alignmentPeriodSeconds: '60'
+        alignmentAligner: mean
+        alignmentReducer: none
+
