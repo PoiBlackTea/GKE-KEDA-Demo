@@ -6,6 +6,20 @@
 
 - 使用開啟 Workload Identity 的 GKE
 
+```sh
+gcloud container clusters create "demo" \
+--zone "asia-east1-a" \
+--machine-type "e2-standard-2" \
+--num-nodes "1" \
+--workload-pool "${PROJECT_ID}.svc.id.goog"
+--node-locations "asia-east1-a"
+```
+
+取得 credentials
+```
+gcloud container clusters get-credentials demo --zone asia-east1-a
+```
+
 ## 設定環境變數
 
 ```sh
@@ -103,6 +117,11 @@ kubectl get po,svc,ing,mcrt,hpa,so
 ## 使用 curl 進行測試
 
 ```sh
-for i in {0..1000}; do curl -s https://demo.poiblacktea.com > /dev/null ; done
+for i in {0..1000}; do curl -I https://demo.poiblacktea.com; sleep 1;  ; done
 kubectl get po,svc,ing,mcrt,hpa,so
 ```
+
+## 結論：
+* 成果可以滿足想在有流量來時才擴縮 Deployment，但需注意在從 0 -> 1 需要不少時間，這應該與 stackdriver 上的取樣點保留 (1m) 有關
+* 實務上可能需要使用像 [http-add-on](https://github.com/kedacore/http-add-on) (需注意在 2024/07/17 仍在不建議用在prod的beta測試階段)來達成
+* 在架構允許下可以考慮使用 Pub/Sub 來進行架構設計
